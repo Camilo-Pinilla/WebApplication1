@@ -1,0 +1,31 @@
+﻿@model List<WebApplication1.Models.Product>
+
+<h1>Hello from product view</h1>
+<div class="d-flex justify-content-end">
+	<a class="btn btn-primary" asp-controller="Product" asp-action="Create">New Product</a>
+</div>
+<table class="table">
+	<thead>
+		<tr>
+			<th>Title</th>
+			<th>Description</th>
+			<th>Price</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach(var obj in Model)
+		{
+			<tr>
+				<td>@obj.Title</td>
+				<td>@obj.Description</td>
+				<td>@obj.Price</td>
+				<td role="group" class="row w-100">
+					<a asp-controller="Product" asp-route-id="@obj.Id" asp-action="Details" class="btn btn-primary col-3 me-2">Details</a>
+					<a asp-controller="Product" asp-route-id="@obj.Id" asp-action="Edit" class="btn btn-outline-primary col-3 me-2">Edit</a>
+					<a asp-controller="Product" asp-route-id="@obj.Id" asp-action="Delete" class="btn btn-danger col-3 me-2">Delete</a>
+				</td>
+			</tr>
+		}
+	</tbody>
+</table>

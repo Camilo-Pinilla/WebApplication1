@@ -25,48 +25,22 @@ namespace ChartsProject.Services
             _configuration = configuration;
         }
 
-        public async Task<List<SimpleChart>> GetAsyncSimpleChartList()
-        {
-            string? httpServicesName = _configuration["GitHubServiceClient"];
-            using HttpClient httpClient = _httpClientFactory.CreateClient(httpServicesName ?? "");
-
-            try
-            {
-                string owner = "vercel";
-                string repo = "next.js";
-                var response = await httpClient.GetFromJsonAsync<dynamic>($"/repos/{owner}/{repo}", new JsonSerializerOptions(JsonSerializerDefaults.Web));
-                if (response is null)
-                {
-                    throw new Exception("The request failed!!");
-                }
-                else
-                {
-                    _logger.LogInformation("Response retrieved correctly");
-                    Console.WriteLine(response);
-                }
-            }
-            catch(Exception ex)
-            {
-                _logger.LogError("It has occurs an error: {Error}: ", ex);
-            }
-
-            return [];
-        } 
-
-        public async Task<OperationResult<int>> RetrieveStargazersCount(string owner, string repo)
+        public async Task<OperationResult<string>> RetrieveStargazersCount(string owner, string repo)
         {
             string? httpClientName = _configuration["GitHubServiceClient"] ?? "";
             using HttpClient client = _httpClientFactory.CreateClient(httpClientName);
 
             try
             {
-                int stargazersCount = await client.GetFromJsonAsync<int>($"/repos/{owner}/{repo}",
+                JsonElement response = await client.GetFromJsonAsync<JsonElement>($"/repos/{owner}/{repo}",
                     new JsonSerializerOptions(JsonSerializerDefaults.Web));
-                return OperationResult<int>.Resolve(stargazersCount);
+                JsonElement stargazersCount = response.GetProperty("stargazers_count");
+  
+                return OperationResult<string>.Resolve(stargazersCount.ToString());
             }catch(Exception ex)
             {
                 _logger.LogError($"Something went wrong: {ex.Message}");
-                return OperationResult<int>.Reject(ex.Message, ex);
+                return OperationResult<string>.Reject(ex.Message, ex);
             }
         }
     }

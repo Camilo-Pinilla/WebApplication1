@@ -1,61 +1,25 @@
 ﻿<div id="chart-container" style="height: 400px" ></div>
 
 <script>
-    const dataSource = {
-        chart: {
-            caption: "Countries With Most Oil Reserves [2022-23]",
-            subcaption: "In MMbbl = One Million barrels",
-            xaxisname: "Country",
-            yaxisname: "Reserves (MMbbl)",
-            numbersuffix: "K",
-            theme: "candy"
-        },
-        data: [
-            {
-                label: "Venezuela",
-                value: "303.8"
-            },
-            {
-                label: "Saudi",
-                value: "297.5"
-            },
-            {
-                label: "Canada",
-                value: "168.1"
-            },
-            {
-                label: "Iran",
-                value: "157.8"
-            },
-            {
-                label: "Iraq",
-                value: "145.0"
-            },
-            {
-                label: "Russia",
-                value: "107.8"
-            },
-            {
-                label: "Kuwait",
-                value: "101.5"
-            },
-            {
-                label: "UAE",
-                value: "97.8"
-            },
-            {
-                label: "US",
-                value: "68.8"
-            },
-            {
-                label: "Libya",
-                value: "48.4"
-            }
-        ]
-    };
+    
+    FusionCharts.ready(async () => {
+        
+        const response = await fetch("https://localhost:7163/Chart/SimpleChart");
+        const data = await response.json();
 
-    FusionCharts.ready(function () {
-        var myChart = new FusionCharts({
+        const dataSource = {
+            chart: {
+                caption: "Countries With Most Oil Reserves [2022-23]",
+                subcaption: "In MMbbl = One Million barrels",
+                xaxisname: "Country",
+                yaxisname: "Reserves (MMbbl)",
+                numbersuffix: "K",
+                theme: "candy"
+            },
+            data
+        };
+      
+        const myChart = new FusionCharts({
             type: "column2d",
             renderAt: "chart-container",
             width: "100%",

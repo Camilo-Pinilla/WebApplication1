@@ -1,4 +1,7 @@
 using ChartsProject.Services;
+using Microsoft.Extensions.Http.Resilience;
+using Microsoft.Extensions.Logging;
+using Polly;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,10 +10,41 @@ builder.Services.AddControllersWithViews();
 
 // Register the IHttpClientFactory in the typed way
 
-builder.Services.AddHttpClient<GithubHttpService>(client =>
+IHttpClientBuilder httpClientBuilder = builder.Services.AddHttpClient<GithubHttpService>(client =>
 {
     client.BaseAddress = new Uri("https://api.github.com/");
     client.DefaultRequestHeaders.UserAgent.ParseAdd("chartsProject");
+});
+
+
+httpClientBuilder.AddResilienceHandler("GithubServicePipeline", builder =>
+{
+    // Add Retry Strategies
+    HttpRetryStrategyOptions retryOptions = new() {
+
+        MaxRetryAttempts = 5,
+        BackoffType = DelayBackoffType.Exponential,
+        UseJitter = true,
+        OnRetry = static args => 
+        {
+            Console.WriteLine("OnRetry, attempt {0}: ", args.AttemptNumber);
+            return default;
+        }
+    };
+
+    builder.AddRetry(retryOptions);
+
+    // Add Timeout Strategies
+    HttpTimeoutStrategyOptions timeOutOptions = new()
+    {
+        Timeout = TimeSpan.FromSeconds(3),
+        OnTimeout = static args => {
+
+            Console.WriteLine("Timeout limit has been exceeded");
+            return default;
+        }
+    };
+    builder.AddTimeout(timeOutOptions);
 });
 
 

@@ -5,18 +5,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Register the IHttpClientFactory
-string? httpClientName = builder.Configuration["GitHubServiceClient"];
-ArgumentException.ThrowIfNullOrEmpty(httpClientName, nameof(httpClientName));
+// Register the IHttpClientFactory in the typed way
 
-builder.Services.AddHttpClient(httpClientName, client =>
+builder.Services.AddHttpClient<GithubHttpService>(client =>
 {
-    client.BaseAddress = new Uri("https://api.github.com");
+    client.BaseAddress = new Uri("https://api.github.com/");
     client.DefaultRequestHeaders.UserAgent.ParseAdd("chartsProject");
 });
 
 
-builder.Services.AddTransient<GithubHttpService>();
 // build the app
 var app = builder.Build();
 

@@ -7,35 +7,34 @@ using ChartsProject.Utilities;
 
 namespace ChartsProject.Services
 {
-    public sealed class GithubHttpService
+    public sealed class GithubHttpService : IDisposable
     {
 
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
-        private readonly IConfiguration _configuration;
 
         public GithubHttpService(
-            IHttpClientFactory httpClientFactory,
-            ILogger<GithubHttpService> logger,
-            IConfiguration configuration)
+            HttpClient httpClient,
+            ILogger<GithubHttpService> logger)
         {
-
-            _httpClientFactory = httpClientFactory;
+            _httpClient = httpClient;
             _logger = logger;
-            _configuration = configuration;
+        }
+
+        public void Dispose()
+        {
+            _httpClient?.Dispose();
         }
 
         public async Task<OperationResult<string>> RetrieveStargazersCount(string owner, string repo)
         {
-            string? httpClientName = _configuration["GitHubServiceClient"] ?? "";
-            using HttpClient client = _httpClientFactory.CreateClient(httpClientName);
 
             try
             {
-                JsonElement response = await client.GetFromJsonAsync<JsonElement>($"/repos/{owner}/{repo}",
+                JsonElement response = await _httpClient.GetFromJsonAsync<JsonElement>($"repos/{owner}/{repo}",
                     new JsonSerializerOptions(JsonSerializerDefaults.Web));
                 JsonElement stargazersCount = response.GetProperty("stargazers_count");
-  
+                _logger.LogTrace($"The base address is: {_httpClient.BaseAddress}");
                 return OperationResult<string>.Resolve(stargazersCount.ToString());
             }catch(Exception ex)
             {

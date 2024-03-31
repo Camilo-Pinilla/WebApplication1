@@ -1,5 +1,6 @@
 ﻿using ChartsProject.Models;
 using ChartsProject.Services;
+using ChartsProject.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json.Nodes;
 
@@ -9,11 +10,13 @@ namespace ChartsProject.Controllers
     {
         private readonly ILogger<ChartController> _logger;
         private readonly GithubHttpService _githubService;
+        private readonly NpmHttpService _npmService;
 
-        public ChartController(ILogger<ChartController> logger, GithubHttpService githubService)
+        public ChartController(ILogger<ChartController> logger, GithubHttpService githubService, NpmHttpService npmService)
         {
             _logger = logger;
             _githubService = githubService;
+            _npmService = npmService;
         }
         public async Task<IActionResult> SimpleChart()
         {
@@ -41,6 +44,20 @@ namespace ChartsProject.Controllers
             }
 
             return Json(simpleChartList);
+        }
+
+
+        public async Task<IActionResult> PlottingChart()
+        {
+            OperationResult<dynamic> result = await _npmService.RetrieveDownloadRecords("nodejs", "bun", "deno");
+            if (result.IsSuccess)
+            {
+                return Json(result.Data);
+            }
+            else
+            {
+                return Content("Something went wrong");
+            }
         }
     }
 }

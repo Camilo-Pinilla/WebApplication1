@@ -1,0 +1,62 @@
+﻿<div id="chart-container-2" style="height: 600px"></div>
+
+
+<script>
+    const loadData = async (url) => {
+        try {
+            const response = await fetch(url);
+            const json = await response.json();
+            return json;
+        } catch (err) {
+            console.log("Something went wrong");
+        }
+    }
+
+    (async () => {
+
+        const response = await Promise.all([
+            loadData(
+                "https://localhost:7163/Chart/PlottingChart"
+            ),
+            loadData(
+                "https://s3.eu-central-1.amazonaws.com/fusion.store/ft/schema/plotting-multiple-series-on-time-axis-schema.json"
+            )
+        ]);
+
+        const data = response[0];
+        const schema = response[1];
+
+        const dataStore = new FusionCharts.DataStore();
+        const dataSource = {
+            chart: {
+                theme: "candy"
+            },
+            caption: {
+                text: "Sales Analysis"
+            },
+            subcaption: {
+                text: "Grocery & Footwear"
+            },
+            series: "Type",
+            yaxis: [
+                {
+                    plot: "Sales Value",
+                    title: "Sale Value",
+                    format: {
+                        prefix: "$"
+                    }
+                }
+            ]
+        };
+        dataSource.data = dataStore.createDataTable(data, schema);
+
+        new FusionCharts({
+            type: "timeseries",
+            renderAt: "chart-container-2",
+            width: "100%",
+            height: "100%",
+            dataSource: dataSource
+        }).render();
+    })()
+    
+</script>

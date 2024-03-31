@@ -16,6 +16,11 @@ IHttpClientBuilder httpClientBuilder = builder.Services.AddHttpClient<GithubHttp
     client.DefaultRequestHeaders.UserAgent.ParseAdd("chartsProject");
 });
 
+IHttpClientBuilder httpClientBuilder2 = builder.Services.AddHttpClient<NpmHttpService>(client =>
+{
+    client.BaseAddress = new Uri("https://api.npmjs.org/downloads/range/2023-01-01:2024-01-01/");
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("chartsProject");
+});
 
 httpClientBuilder.AddResilienceHandler("GithubServicePipeline", builder =>
 {
@@ -47,6 +52,36 @@ httpClientBuilder.AddResilienceHandler("GithubServicePipeline", builder =>
     builder.AddTimeout(timeOutOptions);
 });
 
+httpClientBuilder.AddResilienceHandler("NpmServicePipeline", builder =>
+{
+    // Add Retry Strategies
+    HttpRetryStrategyOptions retryOptions = new()
+    {
+
+        MaxRetryAttempts = 5,
+        BackoffType = DelayBackoffType.Exponential,
+        UseJitter = true,
+        OnRetry = static args =>
+        {
+            Console.WriteLine("OnRetry, attempt {0}: ", args.AttemptNumber);
+            return default;
+        }
+    };
+
+    builder.AddRetry(retryOptions);
+
+    // Add Timeout Strategies
+    HttpTimeoutStrategyOptions timeOutOptions = new()
+    {
+        Timeout = TimeSpan.FromSeconds(3),
+        OnTimeout = static args => {
+
+            Console.WriteLine("Timeout limit has been exceeded");
+            return default;
+        }
+    };
+    builder.AddTimeout(timeOutOptions);
+});
 
 // build the app
 var app = builder.Build();
